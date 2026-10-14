@@ -1,0 +1,27 @@
+@'
+# Frontend
+node_modules/
+dist/
+.next/
+
+# Java / Spring Boot
+target/
+*.class
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Secrets and environment files
+.env
+.env.*
+!.env.example
+
+# IDE and operating system
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+'@ | Set-Content .gitignore

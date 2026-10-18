@@ -1,4 +1,3 @@
-
 package com.fitstud.backend.enums;
 
 public enum Equipment {
@@ -7,8 +6,11 @@ public enum Equipment {
     MACHINE,
     CABLE,
     BODYWEIGHT,
+    SMITH_MACHINE,
+    EZ_BAR,
     KETTLEBELL,
     RESISTANCE_BAND,
-    OTHER,
-    NONE
+    PLATE,
+    NONE,
+    OTHER
 }

@@ -1,6 +1,8 @@
 
 package com.fitstud.backend.entity;
 
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fitstud.backend.enums.Equipment;
 import com.fitstud.backend.enums.ExerciseCategory;
 import com.fitstud.backend.enums.MechanicType;
@@ -85,6 +87,7 @@ public class Exercise {
             joinColumns = @JoinColumn(name = "exercise_id"),
             inverseJoinColumns = @JoinColumn(name = "alternative_exercise_id")
     )
+    @JsonIgnoreProperties("alternativeExercises")
     private Set<Exercise> alternativeExercises = new HashSet<>();
 
     @Column(name = "created_at", nullable = false, updatable = false)

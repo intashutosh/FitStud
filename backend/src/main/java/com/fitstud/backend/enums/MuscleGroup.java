@@ -1,17 +1,24 @@
-
 package com.fitstud.backend.enums;
 
 public enum MuscleGroup {
     CHEST,
     BACK,
+    LATS,
+    UPPER_BACK,
+    LOWER_BACK,
+    TRAPS,
     SHOULDERS,
     BICEPS,
     TRICEPS,
     FOREARMS,
-    ABS,
+    LEGS,
     QUADRICEPS,
     HAMSTRINGS,
     GLUTES,
     CALVES,
-    FULL_BODY
+    ABS,
+    CORE,
+    CARDIO,
+    FULL_BODY,
+    OTHER
 }

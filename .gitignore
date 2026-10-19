@@ -1,0 +1,74 @@
+# ==========================================
+# 1. ENVIRONMENT VARIABLES & SECRETS (CRITICAL)
+# ==========================================
+.env
+.env.*
+**/.env
+**/.env.*
+# Keep example templates tracked in Git
+!.env.example
+!**/.env.example
+application-local.properties
+application-secret.properties
+
+# ==========================================
+# 2. SPRING BOOT / JAVA / MAVEN (Backend)
+# ==========================================
+target/
+**/target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# ==========================================
+# 3. REACT / NEXT.JS / NODE (Frontend)
+# ==========================================
+node_modules/
+**/node_modules/
+.next/
+**/.next/
+out/
+dist/
+build/
+.vercel/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+*.tsbuildinfo
+
+# ==========================================
+# 4. PYTHON / FASTAPI / AI MODELS (AI Service)
+# ==========================================
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+**/venv/
+**/.venv/
+.pytest_cache/
+# Optional: Ignore heavy local ML weights if not using Git LFS
+*.pt
+*.pth
+*.onnx
+*.h5
+
+# ==========================================
+# 5. IDEs & OS FILES (IntelliJ, VS Code, Windows/Mac)
+# ==========================================
+.idea/
+**/.idea/
+*.iws
+*.iml
+*.ipr
+.vscode/
+**/.vscode/
+.DS_Store
+Thumbs.db

@@ -47,6 +47,21 @@ public class User {
         // Required by JPA
     }
 
+    public static User create(
+            String email,
+            String username,
+            String passwordHash,
+            String displayName) {
+
+        User user = new User();
+        user.setEmail(email);
+        user.setUsername(username);
+        user.setPasswordHash(passwordHash);
+        user.setDisplayName(displayName);
+
+        return user;
+    }
+
     @PrePersist
     protected void onCreate() {
         Instant now = Instant.now();

@@ -11,10 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.fitstud.backend.dto.LoginRequest;
 import com.fitstud.backend.dto.LoginResponse;
-import com.fitstud.backend.entity.User;
 import com.fitstud.backend.service.JwtService;
-import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -75,5 +72,12 @@ public class AuthController {
                 user.getUsername(),
                 user.getDisplayName()
         );
+    }
+
+    @PostMapping("/logout")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void logout() {
+        // Stateless JWT logout is handled by the client
+        // discarding its access token.
     }
 }

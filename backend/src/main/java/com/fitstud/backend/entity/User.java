@@ -43,6 +43,9 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    @Column(nullable = false)
+    private long tokenVersion = 0;
+
     protected User() {
         // Required by JPA
     }
@@ -116,6 +119,10 @@ public class User {
         return displayName;
     }
 
+    public long getTokenVersion() {
+        return tokenVersion;
+    }
+
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
     }
@@ -142,5 +149,9 @@ public class User {
 
     public Instant getUpdatedAt() {
         return updatedAt;
+    }
+
+    public void incrementTokenVersion() {
+        this.tokenVersion++;
     }
 }

@@ -33,6 +33,7 @@ public class JwtService {
         return Jwts.builder()
                 .subject(user.getId().toString())
                 .claim("username", user.getUsername())
+                .claim("tokenVersion", user.getTokenVersion())
                 .issuedAt(now)
                 .expiration(new Date(now.getTime() + expirationMs))
                 .signWith(getSigningKey())

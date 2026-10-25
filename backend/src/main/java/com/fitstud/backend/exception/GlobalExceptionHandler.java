@@ -50,10 +50,11 @@ public class GlobalExceptionHandler {
                 .body(Map.of("error", "A conflicting user record already exists"));
     }
 
+
     @ExceptionHandler(BadCredentialsException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public Map<String, String> handleBadCredentials(
             BadCredentialsException ex) {
-        return Map.of("error", "Invalid email or password");
+        return Map.of("error", ex.getMessage());
     }
 }

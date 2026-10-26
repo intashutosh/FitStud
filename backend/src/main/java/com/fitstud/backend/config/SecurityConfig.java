@@ -36,7 +36,7 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
+                        .requestMatchers(   
                                 "/api/auth/register",
                                 "/api/auth/login",
                                 "/api/users/username-availability"

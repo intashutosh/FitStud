@@ -10,6 +10,9 @@ import com.fitstud.backend.enums.WorkoutStatus;
 import com.fitstud.backend.enums.SessionMode;
 import com.fitstud.backend.enums.WorkoutVisibility;
 
+import java.time.Duration;
+import java.math.BigDecimal;
+
 @Entity
 @Table(
         name = "workouts",
@@ -194,4 +197,37 @@ public class Workout {
     public Instant getUpdatedAt() {
         return updatedAt;
     }
+
+    public void finish(
+            BigDecimal totalVolumeKg,
+            int totalSets,
+            int prCount
+    ) {
+        if (this.status != WorkoutStatus.IN_PROGRESS) {
+            throw new IllegalStateException(
+                    "Workout is already completed"
+            );
+        }
+
+        if (totalVolumeKg == null || totalVolumeKg.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Invalid workout volume");
+        }
+
+        if (totalSets < 0 || prCount < 0) {
+            throw new IllegalArgumentException("Workout metrics cannot be negative");
+        }
+
+        this.finishedAt = Instant.now();
+
+        this.durationSeconds = Math.toIntExact(
+                Duration.between(this.startedAt, this.finishedAt).getSeconds()
+        );
+
+        this.totalVolumeKg = totalVolumeKg;
+        this.totalSets = totalSets;
+        this.prCount = prCount;
+
+        this.status = WorkoutStatus.COMPLETED;
+    }
+
 }

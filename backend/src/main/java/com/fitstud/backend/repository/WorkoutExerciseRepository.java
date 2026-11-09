@@ -1,6 +1,7 @@
 package com.fitstud.backend.repository;
 
 import com.fitstud.backend.entity.WorkoutExercise;
+import com.fitstud.backend.enums.WorkoutStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -27,5 +28,13 @@ public interface WorkoutExerciseRepository
     boolean existsByWorkout_IdAndExercise_Id(
             UUID workoutId,
             UUID exerciseId
+    );
+
+    Optional<WorkoutExercise>
+    findFirstByWorkout_User_IdAndExercise_IdAndWorkout_StatusAndWorkout_IdNotOrderByWorkout_FinishedAtDesc(
+            UUID userId,
+            UUID exerciseId,
+            WorkoutStatus status,
+            UUID currentWorkoutId
     );
 }

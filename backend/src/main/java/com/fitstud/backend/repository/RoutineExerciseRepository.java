@@ -1,7 +1,9 @@
 package com.fitstud.backend.repository;
 
 import com.fitstud.backend.entity.RoutineExercise;
+import com.fitstud.backend.entity.WorkoutExercise;
 import org.springframework.data.jpa.repository.JpaRepository;
+import com.fitstud.backend.enums.WorkoutStatus;
 
 import java.util.List;
 import java.util.Optional;

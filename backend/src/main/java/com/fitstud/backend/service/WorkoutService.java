@@ -20,6 +20,7 @@ import com.fitstud.backend.repository.WorkoutSetRepository;
 import java.math.BigDecimal;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -364,5 +365,148 @@ public class WorkoutService {
         workout.finish(totalVolume, completedSets, prCount);
 
         return workoutRepository.save(workout);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Workout> getWorkoutHistory(UUID userId) {
+
+        return workoutRepository
+                .findByUser_IdAndStatusOrderByStartedAtDesc(
+                        userId,
+                        WorkoutStatus.COMPLETED
+                );
+    }
+    @Transactional(readOnly = true)
+    public List<WorkoutSet> getPreviousPerformance(
+            UUID userId,
+            UUID currentWorkoutId,
+            UUID exerciseId
+    ) {
+        // Verify that the current workout belongs to the user.
+        workoutRepository.findByIdAndUser_Id(currentWorkoutId, userId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Workout not found"));
+
+        // Find the most recent completed workout containing this exercise.
+        Optional<WorkoutExercise> previousExercise =
+                workoutExerciseRepository
+                        .findFirstByWorkout_User_IdAndExercise_IdAndWorkout_StatusAndWorkout_IdNotOrderByWorkout_FinishedAtDesc(
+                                userId,
+                                exerciseId,
+                                WorkoutStatus.COMPLETED,
+                                currentWorkoutId
+                        );
+
+        if (previousExercise.isEmpty()) {
+            return List.of();
+        }
+
+        // Return its sets in set-number order.
+        return workoutSetRepository
+                .findByWorkoutExercise_IdOrderBySetNumberAsc(
+                        previousExercise.get().getId()
+                );
+    }
+
+    @Transactional(readOnly = true)
+    public List<Workout> getOngoingWorkouts(UUID userId) {
+
+        return workoutRepository
+                .findByUser_IdAndStatusOrderByStartedAtDesc(
+                        userId,
+                        WorkoutStatus.IN_PROGRESS
+                );
+    }
+
+    @Transactional
+    public void deleteSet(
+            UUID userId,
+            UUID workoutId,
+            UUID workoutExerciseId,
+            UUID setId
+    ) {
+        Workout workout = workoutRepository
+                .findByIdAndUser_Id(workoutId, userId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Workout not found"));
+
+        if (workout.getStatus() != WorkoutStatus.IN_PROGRESS) {
+            throw new IllegalStateException(
+                    "Cannot modify a completed workout"
+            );
+        }
+
+        workoutExerciseRepository
+                .findByIdAndWorkout_Id(workoutExerciseId, workoutId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Workout exercise not found"));
+
+        WorkoutSet set = workoutSetRepository
+                .findByIdAndWorkoutExercise_Id(setId, workoutExerciseId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Workout set not found"));
+
+        workoutSetRepository.delete(set);
+        workoutSetRepository.flush();
+
+        List<WorkoutSet> remainingSets =
+                workoutSetRepository
+                        .findByWorkoutExercise_IdOrderBySetNumberAsc(
+                                workoutExerciseId
+                        );
+
+        // First move all sets to temporary unique numbers.
+        int offset = remainingSets.size() + 1;
+
+        for (WorkoutSet remainingSet : remainingSets) {
+            remainingSet.setSetNumber(
+                    remainingSet.getSetNumber() + offset
+            );
+        }
+
+        workoutSetRepository.saveAllAndFlush(remainingSets);
+
+        // Now assign consecutive set numbers starting from 1.
+        for (int i = 0; i < remainingSets.size(); i++) {
+            remainingSets.get(i).setSetNumber(i + 1);
+        }
+
+        workoutSetRepository.saveAll(remainingSets);
+    }
+
+    @Transactional
+    public void deleteExercise(
+            UUID userId,
+            UUID workoutId,
+            UUID workoutExerciseId
+    ) {
+        Workout workout = workoutRepository
+                .findByIdAndUser_Id(workoutId, userId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Workout not found"));
+
+        if (workout.getStatus() != WorkoutStatus.IN_PROGRESS) {
+            throw new IllegalStateException(
+                    "Cannot modify a completed workout"
+            );
+        }
+
+        WorkoutExercise workoutExercise = workoutExerciseRepository
+                .findByIdAndWorkout_Id(workoutExerciseId, workoutId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Workout exercise not found"));
+
+        // Retrieve all sets belonging to this exercise.
+        List<WorkoutSet> sets =
+                workoutSetRepository
+                        .findByWorkoutExercise_IdOrderBySetNumberAsc(
+                                workoutExerciseId
+                        );
+
+        // Delete the sets first to satisfy the foreign key constraint.
+        workoutSetRepository.deleteAll(sets);
+
+        // Delete the exercise.
+        workoutExerciseRepository.delete(workoutExercise);
     }
 }

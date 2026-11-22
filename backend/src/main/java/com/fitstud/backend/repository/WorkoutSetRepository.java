@@ -27,4 +27,7 @@ public interface WorkoutSetRepository extends JpaRepository<WorkoutSet, UUID> {
 
     long countByWorkoutExercise_IdAndCompletedTrue(UUID workoutExerciseId);
 
+    Optional<WorkoutSet>
+    findTopByWorkoutExercise_IdOrderBySetNumberDesc(UUID workoutExerciseId);
+
 }

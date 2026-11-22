@@ -1,5 +1,6 @@
 package com.fitstud.backend.service;
 
+import com.fitstud.backend.dto.workout.WorkoutResponse;
 import com.fitstud.backend.entity.Exercise;
 import com.fitstud.backend.entity.Routine;
 import com.fitstud.backend.entity.RoutineExercise;
@@ -18,6 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fitstud.backend.entity.WorkoutSet;
 import com.fitstud.backend.repository.WorkoutSetRepository;
 import java.math.BigDecimal;
+import com.fitstud.backend.mapper.WorkoutMapper;
+import com.fitstud.backend.dto.workout.WorkoutDetailsResponse;
+import com.fitstud.backend.dto.workout.WorkoutExerciseDetailsResponse;
 
 import java.util.List;
 import java.util.Optional;
@@ -33,6 +37,7 @@ public class WorkoutService {
     private final RoutineExerciseRepository routineExerciseRepository;
     private final ExerciseRepository exerciseRepository;
     private final WorkoutSetRepository workoutSetRepository;
+    private final WorkoutMapper workoutMapper;
 
     public WorkoutService(
             WorkoutRepository workoutRepository,
@@ -40,7 +45,8 @@ public class WorkoutService {
             UserRepository userRepository,
             RoutineRepository routineRepository,
             RoutineExerciseRepository routineExerciseRepository,
-            ExerciseRepository exerciseRepository, WorkoutSetRepository workoutSetRepository
+            ExerciseRepository exerciseRepository, WorkoutSetRepository workoutSetRepository,
+            WorkoutMapper workoutMapper
     ) {
         this.workoutRepository = workoutRepository;
         this.workoutExerciseRepository = workoutExerciseRepository;
@@ -49,6 +55,7 @@ public class WorkoutService {
         this.routineExerciseRepository = routineExerciseRepository;
         this.exerciseRepository = exerciseRepository;
         this.workoutSetRepository = workoutSetRepository;
+        this.workoutMapper = workoutMapper;
     }
 
     @Transactional
@@ -208,7 +215,10 @@ public class WorkoutService {
         long existingSets = workoutSetRepository
                 .countByWorkoutExercise_Id(workoutExerciseId);
 
-        int setNumber = Math.toIntExact(existingSets + 1);
+        int setNumber = workoutSetRepository
+                .findTopByWorkoutExercise_IdOrderBySetNumberDesc(workoutExerciseId)
+                .map(set -> set.getSetNumber() + 1)
+                .orElse(1);
 
         WorkoutSet workoutSet = WorkoutSet.create(
                 workoutExercise,
@@ -456,7 +466,14 @@ public class WorkoutService {
                         );
 
         // First move all sets to temporary unique numbers.
-        int offset = remainingSets.size() + 1;
+        int maxSetNumber = remainingSets.isEmpty()
+                ? 0
+                : remainingSets.get(remainingSets.size() - 1).getSetNumber();
+
+        int offset = Math.addExact(
+                maxSetNumber,
+                remainingSets.size() + 1
+        );
 
         for (WorkoutSet remainingSet : remainingSets) {
             remainingSet.setSetNumber(
@@ -508,5 +525,100 @@ public class WorkoutService {
 
         // Delete the exercise.
         workoutExerciseRepository.delete(workoutExercise);
+    }
+
+    @Transactional
+    public void reorderExercise(
+            UUID userId,
+            UUID workoutId,
+            UUID workoutExerciseId,
+            int newPosition
+    ) {
+        Workout workout = workoutRepository
+                .findByIdAndUser_Id(workoutId, userId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Workout not found"));
+
+        if (workout.getStatus() != WorkoutStatus.IN_PROGRESS) {
+            throw new IllegalStateException(
+                    "Cannot modify a completed workout"
+            );
+        }
+
+        List<WorkoutExercise> exercises =
+                workoutExerciseRepository
+                        .findByWorkout_IdOrderByPositionAsc(workoutId);
+
+        if (newPosition < 0 || newPosition >= exercises.size()) {
+            throw new IllegalArgumentException("Invalid position");
+        }
+
+        WorkoutExercise target = exercises.stream()
+                .filter(e -> e.getId().equals(workoutExerciseId))
+                .findFirst()
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Workout exercise not found"));
+
+        exercises.remove(target);
+        exercises.add(newPosition, target);
+
+        // Move all exercises to temporary positions first.
+        int maxPosition = workoutExerciseRepository
+                .findTopByWorkout_IdOrderByPositionDesc(workoutId)
+                .map(WorkoutExercise::getPosition)
+                .orElse(-1);
+
+        int offset = Math.addExact(
+                maxPosition,
+                exercises.size() + 1
+        );
+
+        for (WorkoutExercise exercise : exercises) {
+            exercise.setPosition(exercise.getPosition() + offset);
+        }
+
+        workoutExerciseRepository.saveAllAndFlush(exercises);
+
+        // Assign final consecutive positions.
+        for (int i = 0; i < exercises.size(); i++) {
+            exercises.get(i).setPosition(i);
+        }
+
+        workoutExerciseRepository.saveAll(exercises);
+    }
+
+    @Transactional(readOnly = true)
+    public WorkoutDetailsResponse getWorkoutDetails(UUID userId, UUID workoutId) {
+
+        Workout workout = workoutRepository.findByIdAndUser_Id(workoutId, userId)
+                .orElseThrow(() -> new IllegalArgumentException("Workout not found"));
+
+        List<WorkoutExercise> exercises =
+                workoutExerciseRepository.findByWorkout_IdOrderByPositionAsc(workoutId);
+
+        List<WorkoutExerciseDetailsResponse> exerciseDetails = exercises.stream()
+                .map(exercise -> {
+                    List<WorkoutSet> sets =
+                            workoutSetRepository.findByWorkoutExercise_IdOrderBySetNumberAsc(
+                                    exercise.getId()
+                            );
+
+                    return workoutMapper.toWorkoutExerciseDetailsResponse(exercise, sets);
+                })
+                .toList();
+
+        return workoutMapper.toWorkoutDetailsResponse(workout, exerciseDetails);
+    }
+
+    @Transactional(readOnly = true)
+    public List<WorkoutResponse> getWorkoutHistoryResponses(UUID userId) {
+
+        return workoutRepository.findByUser_IdAndStatusOrderByStartedAtDesc(
+                        userId,
+                        WorkoutStatus.COMPLETED
+                )
+                .stream()
+                .map(workoutMapper::toWorkoutResponse)
+                .toList();
     }
 }

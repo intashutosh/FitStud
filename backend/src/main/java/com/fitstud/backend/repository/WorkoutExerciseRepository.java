@@ -37,4 +37,7 @@ public interface WorkoutExerciseRepository
             WorkoutStatus status,
             UUID currentWorkoutId
     );
+
+    Optional<WorkoutExercise>
+    findTopByWorkout_IdOrderByPositionDesc(UUID workoutId);
 }

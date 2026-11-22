@@ -112,10 +112,13 @@ public class WorkoutSet {
     }
 
     public void setWeightKg(BigDecimal weightKg) {
-        if (weightKg != null
-                && weightKg.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException(
-                    "Weight cannot be negative"
+        if (weightKg != null && weightKg.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Weight cannot be negative");
+        }
+
+        if (completed && weightKg == null) {
+            throw new IllegalStateException(
+                    "Cannot clear weight of a completed set"
             );
         }
 
@@ -124,8 +127,12 @@ public class WorkoutSet {
 
     public void setReps(Integer reps) {
         if (reps != null && reps < 1) {
-            throw new IllegalArgumentException(
-                    "Reps must be at least 1"
+            throw new IllegalArgumentException("Reps must be at least 1");
+        }
+
+        if (completed && reps == null) {
+            throw new IllegalStateException(
+                    "Cannot clear reps of a completed set"
             );
         }
 

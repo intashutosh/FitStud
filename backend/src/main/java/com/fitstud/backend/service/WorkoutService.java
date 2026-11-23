@@ -1,6 +1,6 @@
 package com.fitstud.backend.service;
 
-import com.fitstud.backend.dto.workout.WorkoutResponse;
+import com.fitstud.backend.dto.workout.*;
 import com.fitstud.backend.entity.Exercise;
 import com.fitstud.backend.entity.Routine;
 import com.fitstud.backend.entity.RoutineExercise;
@@ -20,8 +20,6 @@ import com.fitstud.backend.entity.WorkoutSet;
 import com.fitstud.backend.repository.WorkoutSetRepository;
 import java.math.BigDecimal;
 import com.fitstud.backend.mapper.WorkoutMapper;
-import com.fitstud.backend.dto.workout.WorkoutDetailsResponse;
-import com.fitstud.backend.dto.workout.WorkoutExerciseDetailsResponse;
 
 import java.util.List;
 import java.util.Optional;
@@ -59,18 +57,19 @@ public class WorkoutService {
     }
 
     @Transactional
-    public Workout startBlankWorkout(UUID userId) {
+    public WorkoutResponse startBlankWorkout(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() ->
                         new IllegalArgumentException("User not found"));
 
         Workout workout = Workout.start(user, null);
 
-        return workoutRepository.save(workout);
+        workout = workoutRepository.save(workout);
+        return  workoutMapper.toWorkoutResponse(workout);
     }
 
     @Transactional
-    public Workout startWorkoutFromRoutine(
+    public WorkoutResponse startWorkoutFromRoutine(
             UUID userId,
             UUID routineId
     ) {
@@ -103,11 +102,11 @@ public class WorkoutService {
 
         workoutExerciseRepository.saveAll(workoutExercises);
 
-        return workout;
+        return workoutMapper.toWorkoutResponse(workout);
     }
 
     @Transactional
-    public WorkoutExercise addExercise(
+    public WorkoutExerciseResponse addExercise(
             UUID userId,
             UUID workoutId,
             UUID exerciseId,
@@ -165,7 +164,8 @@ public class WorkoutService {
                 notes
         );
 
-        return workoutExerciseRepository.save(workoutExercise);
+        workoutExercise =  workoutExerciseRepository.save(workoutExercise);
+        return workoutMapper.toWorkoutExerciseResponse(workoutExercise);
     }
     @Transactional(readOnly = true)
     public Workout getMyWorkout(UUID userId, UUID workoutId) {
@@ -189,7 +189,7 @@ public class WorkoutService {
                 .findByWorkout_IdOrderByPositionAsc(workoutId);
     }
     @Transactional
-    public WorkoutSet addSet(
+    public WorkoutSetResponse addSet(
             UUID userId,
             UUID workoutId,
             UUID workoutExerciseId,
@@ -227,11 +227,12 @@ public class WorkoutService {
                 reps
         );
 
-        return workoutSetRepository.save(workoutSet);
+        workoutSet =  workoutSetRepository.save(workoutSet);
+        return workoutMapper.toWorkoutSetResponse(workoutSet);
     }
 
     @Transactional
-    public WorkoutSet updateSet(
+    public WorkoutSetResponse updateSet(
             UUID userId,
             UUID workoutId,
             UUID workoutExerciseId,
@@ -265,12 +266,13 @@ public class WorkoutService {
         workoutSet.setWeightKg(weightKg);
         workoutSet.setReps(reps);
 
-        return workoutSetRepository.save(workoutSet);
+        workoutSet =  workoutSetRepository.save(workoutSet);
 
+        return workoutMapper.toWorkoutSetResponse(workoutSet);
     }
 
     @Transactional
-    public WorkoutSet updateSetCompletion(
+    public WorkoutSetResponse  updateSetCompletion(
             UUID userId,
             UUID workoutId,
             UUID workoutExerciseId,
@@ -304,11 +306,12 @@ public class WorkoutService {
             workoutSet.markIncomplete();
         }
 
-        return workoutSetRepository.save(workoutSet);
+        workoutSet =  workoutSetRepository.save(workoutSet);
+        return workoutMapper.toWorkoutSetResponse(workoutSet);
     }
 
     @Transactional(readOnly = true)
-    public List<WorkoutSet> getWorkoutSets(
+    public List<WorkoutSetResponse> getWorkoutSets(
             UUID userId,
             UUID workoutId,
             UUID workoutExerciseId
@@ -325,11 +328,14 @@ public class WorkoutService {
                         new IllegalArgumentException("Workout exercise not found"));
 
         return workoutSetRepository
-                .findByWorkoutExercise_IdOrderBySetNumberAsc(workoutExerciseId);
+                .findByWorkoutExercise_IdOrderBySetNumberAsc(workoutExerciseId)
+                .stream()
+                .map(workoutMapper::toWorkoutSetResponse)
+                .toList();
     }
 
     @Transactional
-    public Workout finishWorkout(UUID userId, UUID workoutId) {
+    public WorkoutResponse  finishWorkout(UUID userId, UUID workoutId) {
 
         Workout workout = workoutRepository
                 .findByIdAndUser_Id(workoutId, userId)
@@ -374,7 +380,9 @@ public class WorkoutService {
 
         workout.finish(totalVolume, completedSets, prCount);
 
-        return workoutRepository.save(workout);
+        return workoutMapper.toWorkoutResponse(
+                workoutRepository.save(workout)
+        );
     }
 
     @Transactional(readOnly = true)
@@ -387,7 +395,7 @@ public class WorkoutService {
                 );
     }
     @Transactional(readOnly = true)
-    public List<WorkoutSet> getPreviousPerformance(
+    public List<WorkoutSetResponse> getPreviousPerformance(
             UUID userId,
             UUID currentWorkoutId,
             UUID exerciseId
@@ -415,7 +423,10 @@ public class WorkoutService {
         return workoutSetRepository
                 .findByWorkoutExercise_IdOrderBySetNumberAsc(
                         previousExercise.get().getId()
-                );
+                )
+                .stream()
+                .map(workoutMapper::toWorkoutSetResponse)
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -616,6 +627,18 @@ public class WorkoutService {
         return workoutRepository.findByUser_IdAndStatusOrderByStartedAtDesc(
                         userId,
                         WorkoutStatus.COMPLETED
+                )
+                .stream()
+                .map(workoutMapper::toWorkoutResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<WorkoutResponse> getOngoingWorkoutResponses(UUID userId) {
+
+        return workoutRepository.findByUser_IdAndStatusOrderByStartedAtDesc(
+                        userId,
+                        WorkoutStatus.IN_PROGRESS
                 )
                 .stream()
                 .map(workoutMapper::toWorkoutResponse)

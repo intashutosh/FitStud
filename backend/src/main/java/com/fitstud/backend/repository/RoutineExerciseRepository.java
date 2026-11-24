@@ -26,4 +26,14 @@ public interface RoutineExerciseRepository
 
     // Count the number of exercises in a routine.
     long countByRoutine_Id(UUID routineId);
+
+    boolean existsByRoutine_IdAndExercise_Id(
+            UUID routineId,
+            UUID exerciseId
+    );
+
+    Optional<RoutineExercise> findByRoutine_IdAndExercise_Id(
+            UUID routineId,
+            UUID exerciseId
+    );
 }

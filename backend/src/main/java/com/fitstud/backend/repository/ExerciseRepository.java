@@ -18,4 +18,10 @@ public interface ExerciseRepository extends JpaRepository<Exercise, UUID> {
     boolean existsByOwnerIsNullAndNameIgnoreCase(String name);
 
     boolean existsByOwner_IdAndNameIgnoreCase(UUID ownerId, String name);
+
+    boolean existsByOwner_IdAndNameIgnoreCaseAndIdNot(
+            UUID ownerId,
+            String name,
+            UUID exerciseId
+    );
 }

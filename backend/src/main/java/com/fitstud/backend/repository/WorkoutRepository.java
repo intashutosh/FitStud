@@ -3,6 +3,10 @@ package com.fitstud.backend.repository;
 import com.fitstud.backend.entity.Workout;
 import com.fitstud.backend.enums.WorkoutStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,5 +27,17 @@ public interface WorkoutRepository extends JpaRepository<Workout, UUID> {
             UUID workoutId,
             UUID userId,
             WorkoutStatus status
+    );
+
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+    SELECT w FROM Workout w
+    WHERE w.id = :workoutId
+    AND w.user.id = :userId
+""")
+    Optional<Workout> findByIdAndUserIdForUpdate(
+            @Param("workoutId") UUID workoutId,
+            @Param("userId") UUID userId
     );
 }

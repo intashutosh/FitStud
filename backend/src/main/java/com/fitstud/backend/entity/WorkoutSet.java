@@ -140,6 +140,10 @@ public class WorkoutSet {
     }
 
     public void markCompleted() {
+        if (completed) {
+            return;
+        }
+
         if (weightKg == null || reps == null) {
             throw new IllegalStateException(
                     "Enter weight and reps before completing a set"

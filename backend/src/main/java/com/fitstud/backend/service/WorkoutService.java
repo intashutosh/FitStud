@@ -8,6 +8,7 @@ import com.fitstud.backend.entity.User;
 import com.fitstud.backend.entity.Workout;
 import com.fitstud.backend.entity.WorkoutExercise;
 import com.fitstud.backend.enums.WorkoutStatus;
+import com.fitstud.backend.exception.ResourceNotFoundException;
 import com.fitstud.backend.repository.ExerciseRepository;
 import com.fitstud.backend.repository.RoutineExerciseRepository;
 import com.fitstud.backend.repository.RoutineRepository;
@@ -60,7 +61,7 @@ public class WorkoutService {
     public WorkoutResponse startBlankWorkout(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("User not found"));
+                        new ResourceNotFoundException("User not found"));
 
         Workout workout = Workout.start(user, null);
 
@@ -75,12 +76,12 @@ public class WorkoutService {
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("User not found"));
+                        new ResourceNotFoundException("User not found"));
 
         Routine routine = routineRepository
                 .findByIdAndUser_Id(routineId, userId)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Routine not found"));
+                        new ResourceNotFoundException("Routine not found"));
 
         Workout workout = workoutRepository.save(Workout.start(user, routine));
 
@@ -106,89 +107,6 @@ public class WorkoutService {
     }
 
     @Transactional
-    public WorkoutExerciseResponse addExercise(
-            UUID userId,
-            UUID workoutId,
-            UUID exerciseId,
-            int position,
-            String notes
-    ) {
-        Workout workout = workoutRepository
-                .findByIdAndUser_Id(workoutId, userId)
-                .orElseThrow(() ->
-                        new IllegalArgumentException("Workout not found"));
-
-        if (workout.getStatus() != com.fitstud.backend.enums.WorkoutStatus.IN_PROGRESS) {
-            throw new IllegalStateException(
-                    "Cannot modify a completed workout"
-            );
-        }
-
-        if (position < 0) {
-            throw new IllegalArgumentException(
-                    "Position cannot be negative"
-            );
-        }
-
-        if (workoutExerciseRepository
-                .existsByWorkout_IdAndPosition(workoutId, position)) {
-            throw new IllegalArgumentException(
-                    "This position is already occupied"
-            );
-        }
-
-        Exercise exercise = exerciseRepository.findById(exerciseId)
-                .orElseThrow(() ->
-                        new IllegalArgumentException("Exercise not found"));
-
-        boolean isGlobal = exercise.getOwner() == null;
-
-        boolean isOwnedByUser = exercise.getOwner() != null
-                && exercise.getOwner().getId().equals(userId);
-
-        if (!isGlobal && !isOwnedByUser) {
-            throw new IllegalArgumentException("Exercise not found");
-        }
-
-        if (workoutExerciseRepository
-                .existsByWorkout_IdAndExercise_Id(workoutId, exerciseId)) {
-            throw new IllegalArgumentException(
-                    "Exercise already exists in this workout"
-            );
-        }
-
-        WorkoutExercise workoutExercise = WorkoutExercise.create(
-                workout,
-                exercise,
-                position,
-                notes
-        );
-
-        workoutExercise =  workoutExerciseRepository.save(workoutExercise);
-        return workoutMapper.toWorkoutExerciseResponse(workoutExercise);
-    }
-    @Transactional(readOnly = true)
-    public Workout getMyWorkout(UUID userId, UUID workoutId) {
-        return workoutRepository
-                .findByIdAndUser_Id(workoutId, userId)
-                .orElseThrow(() ->
-                        new IllegalArgumentException("Workout not found"));
-    }
-
-    @Transactional(readOnly = true)
-    public List<WorkoutExercise> getWorkoutExercises(
-            UUID userId,
-            UUID workoutId
-    ) {
-        // First verify that this workout belongs to the user.
-        workoutRepository.findByIdAndUser_Id(workoutId, userId)
-                .orElseThrow(() ->
-                        new IllegalArgumentException("Workout not found"));
-
-        return workoutExerciseRepository
-                .findByWorkout_IdOrderByPositionAsc(workoutId);
-    }
-    @Transactional
     public WorkoutSetResponse addSet(
             UUID userId,
             UUID workoutId,
@@ -197,9 +115,9 @@ public class WorkoutService {
             Integer reps
     ) {
         Workout workout = workoutRepository
-                .findByIdAndUser_Id(workoutId, userId)
+                .findByIdAndUserIdForUpdate(workoutId, userId)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Workout not found"));
+                        new ResourceNotFoundException("Workout not found"));
 
         if (workout.getStatus() != WorkoutStatus.IN_PROGRESS) {
             throw new IllegalStateException(
@@ -210,10 +128,7 @@ public class WorkoutService {
         WorkoutExercise workoutExercise = workoutExerciseRepository
                 .findByIdAndWorkout_Id(workoutExerciseId, workoutId)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Workout exercise not found"));
-
-        long existingSets = workoutSetRepository
-                .countByWorkoutExercise_Id(workoutExerciseId);
+                        new ResourceNotFoundException("Workout exercise not found"));
 
         int setNumber = workoutSetRepository
                 .findTopByWorkoutExercise_IdOrderBySetNumberDesc(workoutExerciseId)
@@ -241,9 +156,9 @@ public class WorkoutService {
             Integer reps
     ) {
         Workout workout = workoutRepository
-                .findByIdAndUser_Id(workoutId, userId)
+                .findByIdAndUserIdForUpdate(workoutId, userId)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Workout not found"));
+                        new ResourceNotFoundException("Workout not found"));
 
         if (workout.getStatus() != WorkoutStatus.IN_PROGRESS) {
             throw new IllegalStateException(
@@ -255,13 +170,13 @@ public class WorkoutService {
         workoutExerciseRepository
                 .findByIdAndWorkout_Id(workoutExerciseId, workoutId)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Workout exercise not found"));
+                        new ResourceNotFoundException("Workout exercise not found"));
 
         // Verify that the set belongs to this exercise.
         WorkoutSet workoutSet = workoutSetRepository
                 .findByIdAndWorkoutExercise_Id(setId, workoutExerciseId)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Workout set not found"));
+                        new ResourceNotFoundException("Workout set not found"));
 
         workoutSet.setWeightKg(weightKg);
         workoutSet.setReps(reps);
@@ -280,9 +195,9 @@ public class WorkoutService {
             boolean completed
     ) {
         Workout workout = workoutRepository
-                .findByIdAndUser_Id(workoutId, userId)
+                .findByIdAndUserIdForUpdate(workoutId, userId)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Workout not found"));
+                        new ResourceNotFoundException("Workout not found"));
 
         if (workout.getStatus() != WorkoutStatus.IN_PROGRESS) {
             throw new IllegalStateException(
@@ -293,12 +208,12 @@ public class WorkoutService {
         workoutExerciseRepository
                 .findByIdAndWorkout_Id(workoutExerciseId, workoutId)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Workout exercise not found"));
+                        new ResourceNotFoundException("Workout exercise not found"));
 
         WorkoutSet workoutSet = workoutSetRepository
                 .findByIdAndWorkoutExercise_Id(setId, workoutExerciseId)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Workout set not found"));
+                        new ResourceNotFoundException("Workout set not found"));
 
         if (completed) {
             workoutSet.markCompleted();
@@ -319,13 +234,13 @@ public class WorkoutService {
         // Verify workout ownership.
         workoutRepository.findByIdAndUser_Id(workoutId, userId)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Workout not found"));
+                        new ResourceNotFoundException("Workout not found"));
 
         // Verify that the exercise belongs to this workout.
         workoutExerciseRepository
                 .findByIdAndWorkout_Id(workoutExerciseId, workoutId)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Workout exercise not found"));
+                        new ResourceNotFoundException("Workout exercise not found"));
 
         return workoutSetRepository
                 .findByWorkoutExercise_IdOrderBySetNumberAsc(workoutExerciseId)
@@ -338,9 +253,9 @@ public class WorkoutService {
     public WorkoutResponse  finishWorkout(UUID userId, UUID workoutId) {
 
         Workout workout = workoutRepository
-                .findByIdAndUser_Id(workoutId, userId)
+                .findByIdAndUserIdForUpdate(workoutId, userId)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Workout not found"));
+                        new ResourceNotFoundException("Workout not found"));
 
         if (workout.getStatus() != WorkoutStatus.IN_PROGRESS) {
             throw new IllegalStateException("Workout is already completed");
@@ -367,6 +282,12 @@ public class WorkoutService {
                     continue;
                 }
 
+                if (set.getWeightKg() == null || set.getReps() == null) {
+                    throw new IllegalStateException(
+                            "Completed set must have both weight and reps"
+                    );
+                }
+
                 BigDecimal setVolume = set.getWeightKg()
                         .multiply(BigDecimal.valueOf(set.getReps()));
 
@@ -386,15 +307,6 @@ public class WorkoutService {
     }
 
     @Transactional(readOnly = true)
-    public List<Workout> getWorkoutHistory(UUID userId) {
-
-        return workoutRepository
-                .findByUser_IdAndStatusOrderByStartedAtDesc(
-                        userId,
-                        WorkoutStatus.COMPLETED
-                );
-    }
-    @Transactional(readOnly = true)
     public List<WorkoutSetResponse> getPreviousPerformance(
             UUID userId,
             UUID currentWorkoutId,
@@ -403,8 +315,14 @@ public class WorkoutService {
         // Verify that the current workout belongs to the user.
         workoutRepository.findByIdAndUser_Id(currentWorkoutId, userId)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Workout not found"));
+                        new ResourceNotFoundException("Workout not found"));
 
+        if (!workoutExerciseRepository.existsByWorkout_IdAndExercise_Id(
+                currentWorkoutId, exerciseId)) {
+            throw new ResourceNotFoundException(
+                    "Exercise does not belong to the current workout"
+            );
+        }
         // Find the most recent completed workout containing this exercise.
         Optional<WorkoutExercise> previousExercise =
                 workoutExerciseRepository
@@ -429,16 +347,6 @@ public class WorkoutService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
-    public List<Workout> getOngoingWorkouts(UUID userId) {
-
-        return workoutRepository
-                .findByUser_IdAndStatusOrderByStartedAtDesc(
-                        userId,
-                        WorkoutStatus.IN_PROGRESS
-                );
-    }
-
     @Transactional
     public void deleteSet(
             UUID userId,
@@ -447,9 +355,9 @@ public class WorkoutService {
             UUID setId
     ) {
         Workout workout = workoutRepository
-                .findByIdAndUser_Id(workoutId, userId)
+                .findByIdAndUserIdForUpdate(workoutId, userId)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Workout not found"));
+                        new ResourceNotFoundException("Workout not found"));
 
         if (workout.getStatus() != WorkoutStatus.IN_PROGRESS) {
             throw new IllegalStateException(
@@ -460,12 +368,12 @@ public class WorkoutService {
         workoutExerciseRepository
                 .findByIdAndWorkout_Id(workoutExerciseId, workoutId)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Workout exercise not found"));
+                        new ResourceNotFoundException("Workout exercise not found"));
 
         WorkoutSet set = workoutSetRepository
                 .findByIdAndWorkoutExercise_Id(setId, workoutExerciseId)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Workout set not found"));
+                        new ResourceNotFoundException("Workout set not found"));
 
         workoutSetRepository.delete(set);
         workoutSetRepository.flush();
@@ -509,9 +417,9 @@ public class WorkoutService {
             UUID workoutExerciseId
     ) {
         Workout workout = workoutRepository
-                .findByIdAndUser_Id(workoutId, userId)
+                .findByIdAndUserIdForUpdate(workoutId, userId)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Workout not found"));
+                        new ResourceNotFoundException("Workout not found"));
 
         if (workout.getStatus() != WorkoutStatus.IN_PROGRESS) {
             throw new IllegalStateException(
@@ -522,7 +430,7 @@ public class WorkoutService {
         WorkoutExercise workoutExercise = workoutExerciseRepository
                 .findByIdAndWorkout_Id(workoutExerciseId, workoutId)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Workout exercise not found"));
+                        new ResourceNotFoundException("Workout exercise not found"));
 
         // Retrieve all sets belonging to this exercise.
         List<WorkoutSet> sets =
@@ -536,6 +444,29 @@ public class WorkoutService {
 
         // Delete the exercise.
         workoutExerciseRepository.delete(workoutExercise);
+        workoutExerciseRepository.flush();
+
+        List<WorkoutExercise> remainingExercises =
+                workoutExerciseRepository
+                        .findByWorkout_IdOrderByPositionAsc(workoutId);
+
+        if (!remainingExercises.isEmpty()) {
+            int offset = remainingExercises.stream()
+                    .mapToInt(WorkoutExercise::getPosition)
+                    .max()
+                    .orElse(0) + 1;
+
+            // Move all positions temporarily to avoid unique constraint conflicts.
+            for (WorkoutExercise exercise : remainingExercises) {
+                exercise.setPosition(exercise.getPosition() + offset);
+            }
+
+
+            // Assign contiguous positions starting from zero.
+            for (int i = 0; i < remainingExercises.size(); i++) {
+                remainingExercises.get(i).setPosition(i);
+            }
+        }
     }
 
     @Transactional
@@ -546,15 +477,17 @@ public class WorkoutService {
             int newPosition
     ) {
         Workout workout = workoutRepository
-                .findByIdAndUser_Id(workoutId, userId)
+                .findByIdAndUserIdForUpdate(workoutId, userId)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Workout not found"));
+                        new ResourceNotFoundException("Workout not found"));
 
         if (workout.getStatus() != WorkoutStatus.IN_PROGRESS) {
             throw new IllegalStateException(
                     "Cannot modify a completed workout"
             );
         }
+
+
 
         List<WorkoutExercise> exercises =
                 workoutExerciseRepository
@@ -568,7 +501,7 @@ public class WorkoutService {
                 .filter(e -> e.getId().equals(workoutExerciseId))
                 .findFirst()
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Workout exercise not found"));
+                        new ResourceNotFoundException("Workout exercise not found"));
 
         exercises.remove(target);
         exercises.add(newPosition, target);
@@ -598,11 +531,83 @@ public class WorkoutService {
         workoutExerciseRepository.saveAll(exercises);
     }
 
+    @Transactional
+    public WorkoutExerciseResponse addExercise(
+            UUID userId,
+            UUID workoutId,
+            UUID exerciseId,
+            int position,
+            String notes
+    ) {
+        Workout workout = workoutRepository
+                .findByIdAndUserIdForUpdate(workoutId, userId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Workout not found"));
+
+        if (workout.getStatus() != com.fitstud.backend.enums.WorkoutStatus.IN_PROGRESS) {
+            throw new IllegalStateException(
+                    "Cannot modify a completed workout"
+            );
+        }
+
+        if (position < 0) {
+            throw new IllegalArgumentException(
+                    "Position cannot be negative"
+            );
+        }
+
+        if (workoutExerciseRepository
+                .existsByWorkout_IdAndPosition(workoutId, position)) {
+            throw new IllegalArgumentException(
+                    "This position is already occupied"
+            );
+        }
+
+        Exercise exercise = exerciseRepository.findById(exerciseId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Exercise not found"));
+
+        boolean isGlobal = exercise.getOwner() == null;
+
+        boolean isOwnedByUser = exercise.getOwner() != null
+                && exercise.getOwner().getId().equals(userId);
+
+        if (!isGlobal && !isOwnedByUser) {
+            throw new ResourceNotFoundException("Exercise not found");
+        }
+
+        if (workoutExerciseRepository
+                .existsByWorkout_IdAndExercise_Id(workoutId, exerciseId)) {
+            throw new IllegalStateException(
+                    "Exercise already exists in this workout"
+            );
+        }
+
+        long exerciseCount =
+                workoutExerciseRepository.countByWorkout_Id(workoutId);
+
+        if (position != exerciseCount) {
+            throw new IllegalArgumentException(
+                    "New exercise must be added at the next available position"
+            );
+        }
+
+        WorkoutExercise workoutExercise = WorkoutExercise.create(
+                workout,
+                exercise,
+                position,
+                notes
+        );
+
+        workoutExercise =  workoutExerciseRepository.save(workoutExercise);
+        return workoutMapper.toWorkoutExerciseResponse(workoutExercise);
+    }
+
     @Transactional(readOnly = true)
     public WorkoutDetailsResponse getWorkoutDetails(UUID userId, UUID workoutId) {
 
         Workout workout = workoutRepository.findByIdAndUser_Id(workoutId, userId)
-                .orElseThrow(() -> new IllegalArgumentException("Workout not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Workout not found"));
 
         List<WorkoutExercise> exercises =
                 workoutExerciseRepository.findByWorkout_IdOrderByPositionAsc(workoutId);

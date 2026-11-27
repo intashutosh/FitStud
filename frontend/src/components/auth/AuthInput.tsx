@@ -1,3 +1,4 @@
+import { colors } from '@/theme/colors';
 import { useState } from 'react';
 import {
   View,
@@ -50,16 +51,16 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   label: {
-    color: '#D0D0D0',
+    color: colors.textSecondary,
     fontSize: 13,
     fontWeight: '600',
     marginBottom: 9,
   },
   inputContainer: {
     height: 54,
-    backgroundColor: '#1B1B1B',
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: '#303030',
+    borderColor: colors.border,
     borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
@@ -67,11 +68,11 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    color: '#FFFFFF',
+    color: colors.text,
     fontSize: 15,
   },
   toggle: {
-    color: '#B8F36B',
+    color: colors.primary,
     fontSize: 11,
     fontWeight: '700',
     paddingLeft: 10,

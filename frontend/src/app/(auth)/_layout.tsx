@@ -1,3 +1,4 @@
+import { colors } from '@/theme/colors';
 
 import { Stack, Redirect } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
@@ -8,8 +9,8 @@ export default function AuthLayout() {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, backgroundColor: '#101010', justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator color="#B8F36B" size="large" />
+      <View style={{ flex: 1, backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator color={colors.primary} size="large" />
       </View>
     );
   }

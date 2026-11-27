@@ -2,6 +2,8 @@ export const colors = {
   background: '#101010',
   surface: '#1B1B1B',
   surfaceElevated: '#242424',
+  surfaceSubtle: '#292929',
+  surfaceTabBar: '#151515',
   surfaceBlue: '#18283F',
 
   primary: '#579BFF',
@@ -13,6 +15,8 @@ export const colors = {
   textMuted: '#666666',
 
   border: '#303030',
+  borderStrong: '#414141',
+  borderSubtle: '#292929',
   success: '#48C78E',
   warning: '#F0B45A',
   danger: '#E47777',

@@ -1,3 +1,4 @@
+import { colors } from '@/theme/colors';
 import { useCallback, useState } from 'react';
 import {
   View,
@@ -136,7 +137,7 @@ export default function HomeScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#B8F36B" />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -152,7 +153,7 @@ export default function HomeScreen() {
             setRefreshing(true);
             loadDashboard();
           }}
-          tintColor="#B8F36B"
+          tintColor={colors.primary}
         />
       }
     >
@@ -362,7 +363,7 @@ function SectionHeader({
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#101010',
+    backgroundColor: colors.background,
   },
   content: {
     paddingHorizontal: 20,
@@ -371,7 +372,7 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#101010',
+    backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -382,16 +383,16 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   brand: {
-    color: '#FFFFFF',
+    color: colors.text,
     fontSize: 21,
     fontWeight: '900',
     letterSpacing: 1.5,
   },
   brandAccent: {
-    color: '#B8F36B',
+    color: colors.primary,
   },
   greeting: {
-    color: '#FFFFFF',
+    color: colors.text,
     fontSize: 23,
     fontWeight: '800',
     marginTop: 12,
@@ -400,45 +401,45 @@ const styles = StyleSheet.create({
     width: 45,
     height: 45,
     borderRadius: 23,
-    backgroundColor: '#292929',
+    backgroundColor: colors.surfaceSubtle,
     borderWidth: 1,
-    borderColor: '#414141',
+    borderColor: colors.borderStrong,
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarText: {
-    color: '#B8F36B',
+    color: colors.primary,
     fontSize: 18,
     fontWeight: '800',
   },
   heroCard: {
-    backgroundColor: '#1C2515',
-    borderColor: '#3A4B29',
+    backgroundColor: colors.surfaceBlue,
+    borderColor: colors.primaryMuted,
     borderWidth: 1,
     borderRadius: 18,
     padding: 22,
     marginBottom: 32,
   },
   eyebrow: {
-    color: '#B8F36B',
+    color: colors.primary,
     fontSize: 10,
     fontWeight: '800',
     letterSpacing: 1.5,
   },
   heroTitle: {
-    color: '#FFFFFF',
+    color: colors.text,
     fontSize: 25,
     fontWeight: '900',
     marginTop: 15,
   },
   heroSubtitle: {
-    color: '#A7B19A',
+    color: '#DCEBFF',
     fontSize: 13,
     marginTop: 9,
     lineHeight: 20,
   },
   primaryButton: {
-    backgroundColor: '#B8F36B',
+    backgroundColor: colors.primary,
     height: 52,
     borderRadius: 11,
     justifyContent: 'center',
@@ -446,7 +447,7 @@ const styles = StyleSheet.create({
     marginTop: 23,
   },
   primaryButtonText: {
-    color: '#101010',
+    color: colors.background,
     fontSize: 12,
     fontWeight: '900',
     letterSpacing: 0.8,
@@ -464,20 +465,20 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   sectionTitle: {
-    color: '#FFFFFF',
+    color: colors.text,
     fontSize: 13,
     fontWeight: '900',
     letterSpacing: 1,
   },
   sectionAction: {
-    color: '#B8F36B',
+    color: colors.primary,
     fontSize: 12,
     fontWeight: '700',
   },
   ongoingCard: {
-    backgroundColor: '#1B1B1B',
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: '#3A4B29',
+    borderColor: colors.primaryMuted,
     borderRadius: 14,
     padding: 17,
     flexDirection: 'row',
@@ -496,23 +497,23 @@ const styles = StyleSheet.create({
     width: 7,
     height: 7,
     borderRadius: 4,
-    backgroundColor: '#B8F36B',
+    backgroundColor: colors.primary,
     marginRight: 7,
   },
   statusText: {
-    color: '#B8F36B',
+    color: colors.primary,
     fontSize: 9,
     fontWeight: '900',
     letterSpacing: 1,
   },
   resumeText: {
-    color: '#B8F36B',
+    color: colors.primary,
     fontSize: 10,
     fontWeight: '900',
     marginLeft: 8,
   },
   routineCard: {
-    backgroundColor: '#1B1B1B',
+    backgroundColor: colors.surface,
     borderRadius: 13,
     padding: 16,
     marginBottom: 10,
@@ -525,17 +526,17 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   cardTitle: {
-    color: '#FFFFFF',
+    color: colors.text,
     fontSize: 15,
     fontWeight: '700',
   },
   mutedText: {
-    color: '#858585',
+    color: colors.textSecondary,
     fontSize: 11,
     marginTop: 6,
   },
   startRoutineButton: {
-    backgroundColor: '#B8F36B',
+    backgroundColor: colors.primary,
     paddingHorizontal: 17,
     paddingVertical: 10,
     borderRadius: 8,
@@ -543,36 +544,36 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   startRoutineText: {
-    color: '#101010',
+    color: colors.background,
     fontSize: 10,
     fontWeight: '900',
   },
   emptyCard: {
-    backgroundColor: '#1B1B1B',
+    backgroundColor: colors.surface,
     borderRadius: 13,
     padding: 19,
   },
   emptyTitle: {
-    color: '#FFFFFF',
+    color: colors.text,
     fontSize: 15,
     fontWeight: '700',
   },
   secondaryButton: {
     alignSelf: 'flex-start',
     borderWidth: 1,
-    borderColor: '#B8F36B',
+    borderColor: colors.primary,
     borderRadius: 8,
     paddingHorizontal: 14,
     paddingVertical: 10,
     marginTop: 16,
   },
   secondaryButtonText: {
-    color: '#B8F36B',
+    color: colors.primary,
     fontSize: 10,
     fontWeight: '900',
   },
   historyCard: {
-    backgroundColor: '#1B1B1B',
+    backgroundColor: colors.surface,
     borderRadius: 13,
     padding: 14,
     marginBottom: 9,
@@ -583,13 +584,13 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 10,
-    backgroundColor: '#292929',
+    backgroundColor: colors.surfaceSubtle,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
   historyIconText: {
-    color: '#B8F36B',
+    color: colors.primary,
     fontSize: 20,
     fontWeight: '700',
   },
@@ -600,7 +601,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   statValue: {
-    color: '#FFFFFF',
+    color: colors.text,
     fontSize: 12,
     fontWeight: '800',
   },

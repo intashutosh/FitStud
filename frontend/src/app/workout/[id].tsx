@@ -1,3 +1,4 @@
+import { colors } from '@/theme/colors';
 import { useCallback, useEffect, useState } from 'react';
 import {
   View,
@@ -49,6 +50,7 @@ export default function ActiveWorkoutScreen() {
   const [busy, setBusy] = useState(false);
   const [exerciseModal, setExerciseModal] = useState(false);
   const [search, setSearch] = useState('');
+  const isCompleted = workout?.workout.status === 'COMPLETED';
 
   const [setValues, setSetValues] = useState<
     Record<string, { weight: string; reps: string }>
@@ -288,6 +290,9 @@ async function handleDeleteExercise(workoutExerciseId: string) {
 
 
   function handleFinishWorkout() {
+    if (workout?.workout.status !== 'IN_PROGRESS') {
+  return;
+}
     Alert.alert(
       'Finish workout?',
       'Your completed sets will be saved to workout history.',
@@ -327,7 +332,7 @@ async function handleDeleteExercise(workoutExerciseId: string) {
   if (loading || !workout) {
     return (
       <View style={styles.loading}>
-        <ActivityIndicator size="large" color="#B8F36B" />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -338,26 +343,39 @@ async function handleDeleteExercise(workoutExerciseId: string) {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={styles.topBar}>
-        <Pressable onPress={() => router.back()}>
-          <Text style={styles.backText}>‹ Back</Text>
-        </Pressable>
+  <Pressable onPress={() => router.back()}>
+    <Text style={styles.backText}>‹ Back</Text>
+  </Pressable>
 
-        <Text style={styles.topTitle}>ACTIVE WORKOUT</Text>
+  <Text style={styles.topTitle}>
+    {isCompleted ? 'WORKOUT DETAILS' : 'ACTIVE WORKOUT'}
+  </Text>
 
-        <Pressable onPress={handleFinishWorkout}>
-          <Text style={styles.finishText}>FINISH</Text>
-        </Pressable>
-      </View>
+  {!isCompleted ? (
+    <Pressable onPress={handleFinishWorkout}>
+      <Text style={styles.finishText}>FINISH</Text>
+    </Pressable>
+  ) : (
+    <View style={styles.readOnlyBadge}>
+      <Text style={styles.readOnlyText}>COMPLETED</Text>
+    </View>
+  )}
+</View>
 
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.heading}>Let's get to work.</Text>
-        <Text style={styles.subtitle}>
-          Log your sets and track your progress.
-        </Text>
+        <Text style={styles.heading}>
+  {isCompleted ? 'Workout completed.' : "Let's get to work."}
+</Text>
+
+<Text style={styles.subtitle}>
+  {isCompleted
+    ? 'Review your performance from this session.'
+    : 'Log your sets and track your progress.'}
+</Text>
 
         <View style={styles.summaryCard}>
           <View>
@@ -395,11 +413,13 @@ async function handleDeleteExercise(workoutExerciseId: string) {
                   </Text>
                 </View>
 
-                <Pressable
-                  onPress={() => handleDeleteExercise(exercise.id)}
-                >
-                  <Text style={styles.removeText}>REMOVE</Text>
-                </Pressable>
+                {!isCompleted && (
+  <Pressable
+    onPress={() => handleDeleteExercise(exercise.id)}
+  >
+    <Text style={styles.removeText}>REMOVE</Text>
+  </Pressable>
+)}
               </View>
 
               {previousSets.length > 0 && (
@@ -454,7 +474,7 @@ async function handleDeleteExercise(workoutExerciseId: string) {
                       keyboardType="decimal-pad"
                       placeholder="0"
                       placeholderTextColor="#666"
-                      editable={!set.completed}
+                      editable={!isCompleted && !set.completed}
                     />
 
                     <TextInput
@@ -472,7 +492,7 @@ async function handleDeleteExercise(workoutExerciseId: string) {
                       keyboardType="number-pad"
                       placeholder="0"
                       placeholderTextColor="#666"
-                      editable={!set.completed}
+                      editable={!isCompleted && !set.completed}
                     />
 
                     <Pressable
@@ -480,6 +500,7 @@ async function handleDeleteExercise(workoutExerciseId: string) {
                         styles.checkButton,
                         set.completed && styles.checkedButton,
                       ]}
+                      disabled={isCompleted || busy}
                       onPress={() => handleCompletion(exercise.id, set)}
                     >
                       <Text style={styles.checkText}>
@@ -487,54 +508,65 @@ async function handleDeleteExercise(workoutExerciseId: string) {
                       </Text>
                     </Pressable>
 
-                    <Pressable
-                      onPress={() => handleSaveSet(exercise.id, set)}
-                      style={styles.saveSetButton}
-                      disabled={busy || set.completed}
-                    >
-                      <Text style={styles.saveSetText}>SAVE</Text>
-                    </Pressable>
+                    {!isCompleted && (
+                      <>
+                        <Pressable
+                          onPress={() => handleSaveSet(exercise.id, set)}
+                          style={styles.saveSetButton}
+                          disabled={busy || set.completed}
+                        >
+                          <Text style={styles.saveSetText}>SAVE</Text>
+                        </Pressable>
 
-                    <Pressable
-                      onPress={() => handleDeleteSet(exercise.id, set.id)}
-                      style={styles.deleteSetButton}
-                      disabled={busy}
-                    >
-                      <Text style={styles.deleteSetText}>×</Text>
-                    </Pressable>
+                        <Pressable
+                          onPress={() => handleDeleteSet(exercise.id, set.id)}
+                          style={styles.deleteSetButton}
+                          disabled={busy}
+                        >
+                          <Text style={styles.deleteSetText}>×</Text>
+                        </Pressable>
+                      </>
+                    )}
+
                   </View>
                 );
               })}
 
-              <Pressable
-                style={styles.addSetButton}
-                onPress={() => handleAddSet(exercise.id)}
-                disabled={busy}
-              >
-                <Text style={styles.addSetText}>+ ADD SET</Text>
-              </Pressable>
+              {!isCompleted && (
+  <Pressable
+    style={styles.addSetButton}
+    onPress={() => handleAddSet(exercise.id)}
+    disabled={busy}
+  >
+    <Text style={styles.addSetText}>+ ADD SET</Text>
+  </Pressable>
+)}
             </View>
           );
         })}
 
-        <Pressable
-          style={styles.addExerciseButton}
-          onPress={() => setExerciseModal(true)}
-        >
-          <Text style={styles.addExerciseText}>+ ADD EXERCISE</Text>
-        </Pressable>
+        {!isCompleted && (
+  <>
+    <Pressable
+      style={styles.addExerciseButton}
+      onPress={() => setExerciseModal(true)}
+    >
+      <Text style={styles.addExerciseText}>+ ADD EXERCISE</Text>
+    </Pressable>
 
-        <Pressable
-          style={styles.finishButton}
-          onPress={handleFinishWorkout}
-          disabled={busy}
-        >
-          <Text style={styles.finishButtonText}>FINISH WORKOUT</Text>
-        </Pressable>
+    <Pressable
+      style={styles.finishButton}
+      onPress={handleFinishWorkout}
+      disabled={busy}
+    >
+      <Text style={styles.finishButtonText}>FINISH WORKOUT</Text>
+    </Pressable>
+  </>
+)}
       </ScrollView>
 
       <Modal
-        visible={exerciseModal}
+        visible={exerciseModal && !isCompleted}
         animationType="slide"
         onRequestClose={() => setExerciseModal(false)}
       >
@@ -600,10 +632,10 @@ async function handleDeleteExercise(workoutExerciseId: string) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#101010' },
+  screen: { flex: 1, backgroundColor: colors.background },
   loading: {
     flex: 1,
-    backgroundColor: '#101010',
+    backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -615,17 +647,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     borderBottomWidth: 1,
-    borderBottomColor: '#292929',
+    borderBottomColor: colors.surfaceSubtle,
   },
-  backText: { color: '#B8F36B', fontSize: 15, fontWeight: '600' },
-  topTitle: { color: '#FFFFFF', fontSize: 11, fontWeight: '900' },
-  finishText: { color: '#B8F36B', fontSize: 12, fontWeight: '900' },
+  backText: { color: colors.primary, fontSize: 15, fontWeight: '600' },
+  topTitle: { color: colors.text, fontSize: 11, fontWeight: '900' },
+  finishText: { color: colors.primary, fontSize: 12, fontWeight: '900' },
   scroll: { flex: 1 },
   content: { padding: 18, paddingBottom: 45 },
-  heading: { color: '#FFFFFF', fontSize: 25, fontWeight: '900' },
-  subtitle: { color: '#858585', fontSize: 13, marginTop: 7 },
+  heading: { color: colors.text, fontSize: 25, fontWeight: '900' },
+  subtitle: { color: colors.textSecondary, fontSize: 13, marginTop: 7 },
   summaryCard: {
-    backgroundColor: '#1B1B1B',
+    backgroundColor: colors.surface,
     borderRadius: 13,
     padding: 18,
     marginTop: 22,
@@ -634,19 +666,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
   },
   summaryLabel: {
-    color: '#858585',
+    color: colors.textSecondary,
     fontSize: 10,
     fontWeight: '800',
     letterSpacing: 1,
   },
   summaryValue: {
-    color: '#B8F36B',
+    color: colors.primary,
     fontSize: 23,
     fontWeight: '900',
     marginTop: 7,
   },
   exerciseCard: {
-    backgroundColor: '#1B1B1B',
+    backgroundColor: colors.surface,
     borderRadius: 14,
     padding: 15,
     marginBottom: 16,
@@ -656,27 +688,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 15,
   },
-  exerciseName: { color: '#FFFFFF', fontSize: 17, fontWeight: '800' },
-  exerciseSub: { color: '#858585', fontSize: 11, marginTop: 5 },
+  exerciseName: { color: colors.text, fontSize: 17, fontWeight: '800' },
+  exerciseSub: { color: colors.textSecondary, fontSize: 11, marginTop: 5 },
   removeText: {
-    color: '#D77A7A',
+    color: colors.danger,
     fontSize: 10,
     fontWeight: '800',
     padding: 8,
   },
   previousCard: {
-    backgroundColor: '#242D1B',
+    backgroundColor: colors.surfaceBlue,
     padding: 11,
     borderRadius: 9,
     marginBottom: 15,
   },
   previousTitle: {
-    color: '#B8F36B',
+    color: colors.primary,
     fontSize: 9,
     fontWeight: '900',
     letterSpacing: 1,
   },
-  previousValue: { color: '#D6E5C3', fontSize: 11, marginTop: 7 },
+  previousValue: { color: '#DCEBFF', fontSize: 11, marginTop: 7 },
   setHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -684,7 +716,7 @@ const styles = StyleSheet.create({
   },
   column: {
     flex: 1,
-    color: '#858585',
+    color: colors.textSecondary,
     textAlign: 'center',
     fontSize: 10,
     fontWeight: '800',
@@ -696,13 +728,13 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   setNumber: { alignItems: 'center', justifyContent: 'center' },
-  setNumberText: { color: '#B8F36B', fontWeight: '800', fontSize: 13 },
+  setNumberText: { color: colors.primary, fontWeight: '800', fontSize: 13 },
   setInput: {
     flex: 1,
     height: 39,
-    backgroundColor: '#292929',
+    backgroundColor: colors.surfaceSubtle,
     borderRadius: 7,
-    color: '#FFFFFF',
+    color: colors.text,
     textAlign: 'center',
     fontSize: 13,
     paddingHorizontal: 2,
@@ -718,14 +750,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   checkedButton: {
-    backgroundColor: '#B8F36B',
-    borderColor: '#B8F36B',
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
-  checkText: { color: '#101010', fontWeight: '900', fontSize: 16 },
+  checkText: { color: colors.background, fontWeight: '900', fontSize: 16 },
   saveSetButton: { paddingHorizontal: 5, paddingVertical: 8 },
-  saveSetText: { color: '#B8F36B', fontSize: 9, fontWeight: '900' },
+  saveSetText: { color: colors.primary, fontSize: 9, fontWeight: '900' },
   deleteSetButton: { paddingHorizontal: 4, paddingVertical: 5 },
-  deleteSetText: { color: '#D77A7A', fontSize: 19 },
+  deleteSetText: { color: colors.danger, fontSize: 19 },
   addSetButton: {
     borderTopWidth: 1,
     borderTopColor: '#333',
@@ -733,27 +765,27 @@ const styles = StyleSheet.create({
     paddingTop: 14,
     alignItems: 'center',
   },
-  addSetText: { color: '#B8F36B', fontSize: 11, fontWeight: '900' },
+  addSetText: { color: colors.primary, fontSize: 11, fontWeight: '900' },
   addExerciseButton: {
     borderWidth: 1,
-    borderColor: '#B8F36B',
+    borderColor: colors.primary,
     borderRadius: 11,
     padding: 16,
     alignItems: 'center',
     marginTop: 5,
   },
-  addExerciseText: { color: '#B8F36B', fontSize: 12, fontWeight: '900' },
+  addExerciseText: { color: colors.primary, fontSize: 12, fontWeight: '900' },
   finishButton: {
-    backgroundColor: '#B8F36B',
+    backgroundColor: colors.primary,
     borderRadius: 11,
     padding: 17,
     alignItems: 'center',
     marginTop: 15,
   },
-  finishButtonText: { color: '#101010', fontSize: 13, fontWeight: '900' },
+  finishButtonText: { color: colors.background, fontSize: 13, fontWeight: '900' },
   modalScreen: {
     flex: 1,
-    backgroundColor: '#101010',
+    backgroundColor: colors.background,
     paddingTop: 55,
     paddingHorizontal: 20,
   },
@@ -763,14 +795,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
-  modalTitle: { color: '#FFFFFF', fontSize: 23, fontWeight: '900' },
-  closeText: { color: '#B8F36B', fontSize: 11, fontWeight: '900' },
+  modalTitle: { color: colors.text, fontSize: 23, fontWeight: '900' },
+  closeText: { color: colors.primary, fontSize: 11, fontWeight: '900' },
   searchInput: {
-    backgroundColor: '#1B1B1B',
+    backgroundColor: colors.surface,
     borderRadius: 10,
     height: 48,
     paddingHorizontal: 15,
-    color: '#FFFFFF',
+    color: colors.text,
     marginBottom: 15,
   },
   exerciseOption: {
@@ -778,14 +810,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#292929',
+    borderBottomColor: colors.surfaceSubtle,
   },
-  optionName: { color: '#FFFFFF', fontSize: 14, fontWeight: '700' },
-  optionSub: { color: '#858585', fontSize: 11, marginTop: 5 },
-  optionAction: { color: '#B8F36B', fontSize: 10, fontWeight: '900' },
+  optionName: { color: colors.text, fontSize: 14, fontWeight: '700' },
+  optionSub: { color: colors.textSecondary, fontSize: 11, marginTop: 5 },
+  optionAction: { color: colors.primary, fontSize: 10, fontWeight: '900' },
   noResults: {
-    color: '#858585',
+    color: colors.textSecondary,
     textAlign: 'center',
     marginTop: 30,
   },
+  readOnlyBadge: {
+  backgroundColor: '#173326',
+  paddingHorizontal: 10,
+  paddingVertical: 6,
+  borderRadius: 20,
+},
+
+readOnlyText: {
+  color: '#48C78E',
+  fontSize: 9,
+  fontWeight: '900',
+  letterSpacing: 0.5,
+},
 });

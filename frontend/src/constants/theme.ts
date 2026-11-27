@@ -6,21 +6,22 @@
 import '@/global.css';
 
 import { Platform } from 'react-native';
+import { colors } from '@/theme/colors';
 
 export const Colors = {
   light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
+    text: colors.black,
+    background: colors.white,
+    backgroundElement: colors.surface,
+    backgroundSelected: colors.surfaceBlue,
+    textSecondary: colors.textSecondary,
   },
   dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
+    text: colors.text,
+    background: colors.background,
+    backgroundElement: colors.surface,
+    backgroundSelected: colors.surfaceBlue,
+    textSecondary: colors.textSecondary,
   },
 } as const;
 

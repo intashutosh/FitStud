@@ -1,3 +1,4 @@
+import { colors } from '@/theme/colors';
 import { Image } from 'expo-image';
 import * as SplashScreen from 'expo-splash-screen';
 import { useState } from 'react';
@@ -133,14 +134,14 @@ const styles = StyleSheet.create({
   },
   background: {
     borderRadius: 40,
-    experimental_backgroundImage: `linear-gradient(180deg, #3C9FFE, #0274DF)`,
+    experimental_backgroundImage: `linear-gradient(180deg, ${colors.primary}, ${colors.primaryPressed})`,
     width: 128,
     height: 128,
     position: 'absolute',
   },
   splashOverlay: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: '#208AEF',
+    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 1000,

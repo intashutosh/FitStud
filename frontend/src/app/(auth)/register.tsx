@@ -1,3 +1,4 @@
+import { colors } from '@/theme/colors';
 import { useState } from 'react';
 import {
   View,
@@ -162,7 +163,7 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#101010',
+    backgroundColor: colors.background,
   },
   content: {
     flexGrow: 1,
@@ -174,16 +175,16 @@ const styles = StyleSheet.create({
     marginBottom: 35,
   },
   logo: {
-    color: '#FFFFFF',
+    color: colors.text,
     fontSize: 30,
     fontWeight: '900',
     letterSpacing: 2,
   },
   logoAccent: {
-    color: '#B8F36B',
+    color: colors.primary,
   },
   tagline: {
-    color: '#777777',
+    color: colors.textSecondary,
     fontSize: 10,
     letterSpacing: 2,
     marginTop: 7,
@@ -193,12 +194,12 @@ const styles = StyleSheet.create({
     marginBottom: 28,
   },
   heading: {
-    color: '#FFFFFF',
+    color: colors.text,
     fontSize: 29,
     fontWeight: '800',
   },
   subtitle: {
-    color: '#858585',
+    color: colors.textSecondary,
     fontSize: 13,
     marginTop: 8,
     lineHeight: 20,
@@ -208,14 +209,14 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     height: 55,
-    backgroundColor: '#B8F36B',
+    backgroundColor: colors.primary,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 8,
   },
   primaryButtonText: {
-    color: '#101010',
+    color: colors.background,
     fontSize: 14,
     fontWeight: '900',
     letterSpacing: 1,
@@ -231,11 +232,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   footerText: {
-    color: '#858585',
+    color: colors.textSecondary,
     fontSize: 13,
   },
   link: {
-    color: '#B8F36B',
+    color: colors.primary,
     fontSize: 13,
     fontWeight: '700',
   },

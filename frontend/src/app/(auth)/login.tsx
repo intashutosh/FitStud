@@ -1,3 +1,4 @@
+import { colors } from '@/theme/colors';
 import { useState } from 'react';
 import {
   View,
@@ -126,7 +127,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#101010',
+    backgroundColor: colors.background,
   },
   content: {
     flexGrow: 1,
@@ -138,16 +139,16 @@ const styles = StyleSheet.create({
     marginBottom: 65,
   },
   logo: {
-    color: '#FFFFFF',
+    color: colors.text,
     fontSize: 32,
     fontWeight: '900',
     letterSpacing: 2,
   },
   logoAccent: {
-    color: '#B8F36B',
+    color: colors.primary,
   },
   tagline: {
-    color: '#777777',
+    color: colors.textSecondary,
     fontSize: 10,
     letterSpacing: 2,
     marginTop: 8,
@@ -157,12 +158,12 @@ const styles = StyleSheet.create({
     marginBottom: 35,
   },
   heading: {
-    color: '#FFFFFF',
+    color: colors.text,
     fontSize: 31,
     fontWeight: '800',
   },
   subtitle: {
-    color: '#858585',
+    color: colors.textSecondary,
     fontSize: 14,
     marginTop: 9,
     lineHeight: 21,
@@ -172,14 +173,14 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     height: 55,
-    backgroundColor: '#B8F36B',
+    backgroundColor: colors.primary,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 10,
   },
   primaryButtonText: {
-    color: '#101010',
+    color: colors.background,
     fontSize: 14,
     fontWeight: '900',
     letterSpacing: 1,
@@ -195,11 +196,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   footerText: {
-    color: '#858585',
+    color: colors.textSecondary,
     fontSize: 13,
   },
   link: {
-    color: '#B8F36B',
+    color: colors.primary,
     fontSize: 13,
     fontWeight: '700',
   },

@@ -1,3 +1,4 @@
+import { colors } from '@/theme/colors';
 
 import { Tabs, Redirect } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
@@ -8,8 +9,8 @@ export default function TabLayout() {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, backgroundColor: '#101010', justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator color="#B8F36B" size="large" />
+      <View style={{ flex: 1, backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator color={colors.primary} size="large" />
       </View>
     );
   }
@@ -22,17 +23,17 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#B8F36B',
-        tabBarInactiveTintColor: '#858585',
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textSecondary,
         tabBarStyle: {
-          backgroundColor: '#151515',
-          borderTopColor: '#292929',
+          backgroundColor: colors.surfaceTabBar,
+          borderTopColor: colors.surfaceSubtle,
           height: 65,
           paddingBottom: 8,
           paddingTop: 8,
         },
         sceneStyle: {
-          backgroundColor: '#101010',
+          backgroundColor: colors.background,
         },
       }}
     >

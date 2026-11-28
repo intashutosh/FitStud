@@ -5,6 +5,8 @@ export interface RoutineResponse {
   description: string | null;
   createdAt: string;
   updatedAt: string;
+  folderId: string | null;
+
 }
 
 export interface RoutineExerciseResponse {
@@ -13,6 +15,7 @@ export interface RoutineExerciseResponse {
   exerciseName: string;
   position: number;
   notes: string | null;
+  folderId: string | null;
 }
 
 export interface RoutineDetailsResponse {
@@ -39,3 +42,4 @@ export interface AddRoutineExerciseRequest {
 export interface ReorderRoutineExerciseRequest {
   newPosition: number;
 }
+

@@ -28,7 +28,7 @@ public class RoutineController {
     }
 
     // Create a routine
-    @PostMapping
+    @PostMapping    
     public ResponseEntity<RoutineResponse> createRoutine(
             @AuthenticationPrincipal UserDetails userDetails,
             @Valid @RequestBody CreateRoutineRequest request) {

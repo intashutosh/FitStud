@@ -20,6 +20,13 @@ public class Routine {
     )
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "folder_id",
+            foreignKey = @ForeignKey(name = "fk_routines_folder")
+    )
+    private RoutineFolder folder;
+
     @Column(nullable = false, length = 100)
     private String name;
 
@@ -103,6 +110,22 @@ public class Routine {
         }
 
         this.description = description;
+    }
+
+
+    public RoutineFolder getFolder() {
+        return folder;
+    }
+
+    public void setFolder(RoutineFolder folder) {
+        if (folder != null && user != null
+                && !folder.getUser().getId().equals(user.getId())) {
+            throw new IllegalArgumentException(
+                    "Routine folder must belong to the routine owner"
+            );
+        }
+
+        this.folder = folder;
     }
 
     public UUID getId() {

@@ -17,4 +17,20 @@ public interface RoutineRepository extends JpaRepository<Routine, UUID> {
 
     // Check whether a user owns a particular routine name.
     boolean existsByUser_IdAndNameIgnoreCase(UUID userId, String name);
+
+
+    List<Routine> findByUser_IdAndFolder_IdOrderByCreatedAtDesc(
+            UUID userId,
+            UUID folderId
+    );
+
+    List<Routine> findByUser_IdAndFolderIsNullOrderByCreatedAtDesc(
+            UUID userId
+    );
+
+    long countByUser_IdAndFolder_Id(
+            UUID userId,
+            UUID folderId
+    );
+
 }
